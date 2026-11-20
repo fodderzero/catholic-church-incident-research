@@ -1,6 +1,6 @@
 # Catholic Church Incident Research
 
-This SQLite archive documents selected incidents affecting Catholic churches, parish property and people at worship worldwide. Each case links to published evidence. Counts describe the cases researched and depend on the project's coverage.
+This SQLite archive documents selected incidents affecting Catholic churches, parish property and people at worship worldwide. It also documents attacks on Catholic clergy and laypeople wherever they occur. A religious motive is recorded only when supported by evidence. Each case links to published evidence. Counts describe the cases researched and depend on the project's coverage.
 
 ## Explore the cases
 
