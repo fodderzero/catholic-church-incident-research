@@ -11,7 +11,7 @@ from urllib.parse import urlsplit
 ROOT = Path(__file__).resolve().parent
 OUT = Path(os.environ.get("ATLAS_OUTPUT", "public-atlas"))
 DB = ROOT.parent / "Catholic_Church_Incident_Research.sqlite"
-ORIGIN = "https://catholic-incident-atlas.toasty-wolf-9016.chatgpt.site"
+ORIGIN = "https://incidentatlas.net"
 REPO = "https://github.com/fodderzero/catholic-church-incident-research"
 links = json.loads((ROOT / "links.json").read_text())
 connection = sqlite3.connect(DB.as_uri() + "?mode=ro", uri=True)

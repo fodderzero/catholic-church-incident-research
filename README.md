@@ -16,4 +16,4 @@ Start edits from the current database on `main`. Let SQLite assign the next inci
 
 A database commit triggers **Publish reviewed Atlas cases** in GitHub Actions. A successful run replaces the generated pages on the `atlas-web` branch together. The public site reads that branch. The original case addresses are preserved in `web/links.json`, and new cases use their incident IDs. Withdrawn cases drop out of the counts and keep an explanatory page at the old address.
 
-[Open the live Atlas](https://catholic-incident-atlas.toasty-wolf-9016.chatgpt.site/) · [Publishing history](https://github.com/fodderzero/catholic-church-incident-research/actions/workflows/publish-atlas.yml)
+[Open the live Atlas](https://incidentatlas.net/) · [Publishing history](https://github.com/fodderzero/catholic-church-incident-research/actions/workflows/publish-atlas.yml)
