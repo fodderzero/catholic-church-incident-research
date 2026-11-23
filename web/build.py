@@ -22,6 +22,10 @@ CASES = [dict(row) for row in connection.execute("SELECT * FROM case_search WHER
 expected = connection.execute("SELECT count(*) FROM incidents WHERE review_status='reviewed'").fetchone()[0]
 if len({c["incident_id"] for c in CASES}) != expected or len(CASES) != expected:
     raise ValueError("Reviewed incident count differs from case_search")
+# An optional public headline can be maintained with the rest of the case in SQLite.
+headlines = {}
+if connection.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='public_headlines'").fetchone():
+    headlines = dict(connection.execute("SELECT incident_id, headline FROM public_headlines"))
 for c in CASES:
     c["sources"] = [dict(row) for row in connection.execute("SELECT * FROM sources WHERE incident_id=? ORDER BY source_id", (c["incident_id"],))]
     if not c["sources"] or not c["atlas_date"]:
@@ -59,7 +63,7 @@ for c in CASES:
     record_id = str(c['incident_id'])
     c['place'] = {'Near Fraserwood, Rural Municipality of Armstrong':'Near Fraserwood','Khari Bamuner Chak (Bamunerchak)':'Khari Bamuner Chak','Malaguna 3, Rabaul area':'Malaguna 3'}.get(c['locality'],c['locality']) or c['region'] or c['country']
     metadata = links.get(record_id, {})
-    c['title'] = metadata.get('headline') or f"{c['event_type'].capitalize()} in {c['place']}"
+    c['title'] = headlines.get(c['incident_id']) or metadata.get('headline') or f"{c['event_type'].capitalize()} in {c['place']}"
     c['key'] = metadata.get('slug', record_id)
     c['url']='/cases/'+c['key']+'/'
     c['month']=c['atlas_date'][:7]
@@ -77,7 +81,7 @@ def recorddate(c,fmt='%b %d, %Y'):
 def layout(title,desc,url,body,section):
     nav=''.join(f'<a href="{path}"'+(' aria-current="page"' if section==key else '')+'>'+label+'</a>' for key,path,label in [('map','/','Explore the map'),('about','/about/','About the Atlas')])
     return f'''<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>{e(title)} · Catholic Incident Atlas</title><meta name="description" content="{e(desc)}"><link rel="canonical" href="{ORIGIN+url}">
+<title>{e(title)} · Catholic Incident Atlas</title><meta name="description" content="{e(desc)}"><meta name="atlas-revision" content="{e(os.environ.get('GITHUB_SHA', 'local'))}"><link rel="canonical" href="{ORIGIN+url}">
 <meta property="og:title" content="{e(title)} · Catholic Incident Atlas"><meta property="og:description" content="{e(desc)}">
 <meta property="og:type" content="website"><meta property="og:url" content="{ORIGIN+url}"><meta name="twitter:card" content="summary_large_image"><meta property="og:image" content="{ORIGIN}/assets/share.jpg"><meta property="og:image:alt" content="Catholic Incident Atlas"><link rel="icon" href="/assets/logo.png"><link rel="stylesheet" href="/assets/atlas.css"><script src="/assets/atlas.js" defer></script></head><body>
 <a class="skip" href="#main">Skip to content</a><header><div class="wrap mast"><a class="brand" href="/"><img src="/assets/logo.png" width="43" height="43" alt="">Catholic Incident Atlas</a><nav aria-label="Main navigation">{nav}</nav></div></header>
