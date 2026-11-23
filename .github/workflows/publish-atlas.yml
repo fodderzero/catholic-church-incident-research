@@ -1,0 +1,49 @@
+name: Publish reviewed Atlas cases
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'Catholic_Church_Incident_Research.sqlite'
+      - 'web/**'
+      - '.github/workflows/publish-atlas.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: publish-reviewed-atlas
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Build and validate public pages
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git ls-remote --exit-code origin refs/heads/atlas-web; then
+            git fetch --depth=1 origin refs/heads/atlas-web:refs/remotes/origin/atlas-web
+            git show origin/atlas-web:publication.json > "$RUNNER_TEMP/prior.json"
+          fi
+          export GITHUB_SHA="$(git rev-parse HEAD)"
+          ATLAS_PREVIOUS_INDEX="$RUNNER_TEMP/prior.json" ATLAS_OUTPUT="$RUNNER_TEMP/atlas-release" python3 web/build.py
+      - name: Publish validated pages together
+        shell: bash
+        run: |
+          set -euo pipefail
+          revision="$(git rev-parse HEAD)"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          if git show-ref --verify --quiet refs/remotes/origin/atlas-web; then
+            git checkout --detach refs/remotes/origin/atlas-web
+          else
+            git checkout --orphan atlas-web
+          fi
+          git rm -rq --ignore-unmatch .
+          cp -a "$RUNNER_TEMP/atlas-release/." .
+          git add -A
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "Publish reviewed Atlas records from $revision"
+          git push origin HEAD:refs/heads/atlas-web
